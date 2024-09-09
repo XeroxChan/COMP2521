@@ -1,0 +1,8 @@
+Question 2
+
+Explain why the compilation error occurred and briefly describe how it
+can be fixed.
+
+It is because the slot in the edges[][] cannot assign bool values.
+Instead of assigning true, assign 1.
+

@@ -1,0 +1,24 @@
+Question 7
+
+(a) How many items are examined in searching for the key 42? Justify
+    your answer.
+    
+    4 items will be examined.
+    Searching for key 42 returns 9 in the hash function, items 9, 20, 31 and 42 will be examined.
+
+
+
+
+(b) How many items are examined in searching for the key 111? Justify
+    your answer.
+
+    10 items will be examined.
+    key 111 returns in 1 in the hash function, items 1, 12, 23, 34, 45, 56, 67, 78, 89, 100 will be examined and found out 111 is not in the hash table. 
+    
+
+(c) What is the worst-case search cost after N total items have been
+    inserted? Justify your answer.
+
+    The worst-case search would be n/11.
+    Since the hash function is of modulo 11, for every 11 item inserted wraps around and the list of that slot would increase by 1. That if 11 item is inserted, the worst search for a key would be 1. and for every 11 item inserted, the worst case would grow by 1 for searching items that is not in the hash table.
+

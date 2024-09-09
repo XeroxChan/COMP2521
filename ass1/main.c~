@@ -1,0 +1,11 @@
+#include<stdio.h>
+
+#include "helper.h"
+
+
+
+int main(void) {
+    char *str = "hello";
+    printf("%s", wordsOPeration(str););
+    return 0;
+}

@@ -1,0 +1,11 @@
+#include <stdio.h>
+
+#include "invertedIndex.h"
+#include "helper.h"
+
+int main(void) {
+    InvertedIndexBST tree = insertNode(tree, "Hi", "hi.txt");
+    
+    printInvertedIndex(tree, "out.txt");
+    return 0;
+}

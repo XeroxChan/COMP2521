@@ -1,0 +1,38 @@
+Question 1
+
+(a) What is the maximum input size that can be processed? Justify your
+    answer.
+    
+    maximum input size that can be processed is 19.
+    
+    There are 1440 minutes in a day. If a computer is 1000 times faster, it is the same as saying there are 1440000 minutes in a day for the faster computer to operate.
+    Since the original computer can process input size of 10 in one day in a algorithm of O(2^n), which is 2^10 = 1024.
+     
+    Let x be the maximum input size that can be processed: 
+                        1024 / 1440 = 2^(x) / 1440000.
+                        log(1024000) = 2*log(x)
+                        x = 19.96578...
+                        
+    Round down x to the nearest integer, x would be 19.
+    
+
+
+(b) Which of the two algorithms is more efficient? Justify your answer.
+
+    Quad search is more efficient than binary search.
+    
+    Since both of the algorithms is a recursive algorithm, we can expect the number of recursive calls to be log(n) times.
+    
+    Now, in the recusive calls, the binary search half the search space which makes the it log(n)/2 while the quad search quater the search space which makes it log(n)/4.
+    
+    Assuming comparisons are at constant time, this makes quad search more efficient.
+
+(c) What are the time complexities of fnA() and fnB() in terms of a and
+    b? Justify your answer.
+
+    fnA() has a time complexity of b - a.
+    The function increament a by 1 until it equals to b, therefore it has to run b - a times. Other operations in the function are at constant time.
+    
+    fnB() has a time complexity of (b - a)^2.
+    fnB() calls fnA() which has a time complexity of b - a and the fnB() itself has a timne complexity of b - a as well as it increament a by 1 until it equals to b, therefore it has to run b - a times and   other operations in the function are at constant time. Combining the two 
+    

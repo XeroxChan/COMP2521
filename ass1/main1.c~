@@ -1,0 +1,41 @@
+#include <stdio.h>
+
+#include "helper.h"
+#include "helper.c"
+#include "invertedIndex.h"
+#include "invertedIndex.c"
+
+void printBST(InvertedIndexBST tree, char *filename);
+
+int main(void) {
+    InvertedIndexBST tree = createWholeNode("Hi","hi.txt");
+    FileNodeOPeration(tree, "bye.txt", "Hi");
+    FileNodeOPeration(tree, "zebra.txt", "Hi");
+    FileNodeOPeration(tree, "zebra.txt", "Hi");
+    FileNodeOPeration(tree, "apple.txt", "Hi");
+    tree = insertNode(tree, "bye", "hi.txt");
+    UpdateTF(tree, "zebra.txt", 2);
+    printf("%d\n", haveWord(tree, "Hi"));
+    printf("%d\n", haveWord(tree, "word"));
+    printInvertedIndex(tree, "test.out");
+}
+
+
+void printBST(InvertedIndexBST tree, char* filename) {
+    FILE *out = fopen(filename, "a");
+    //base case
+    if (tree == NULL) {
+        return;
+    }
+    printBST(tree->left, filename);
+    FileList current_file_node = tree->fileList;
+    fprintf(out, "%s ", tree->word);
+    while (current_file_node != NULL) {
+        fprintf(out, "%s ", current_file_node->filename);
+        fprintf(out, "(%.7lf) ", current_file_node->tf);
+        current_file_node = current_file_node->next;
+    }
+    fprintf(out, "\n");
+    printBST(tree->right, filename);
+    return;
+}

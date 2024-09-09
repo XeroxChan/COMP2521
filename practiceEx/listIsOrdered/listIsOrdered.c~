@@ -1,0 +1,44 @@
+
+#include "list.h"
+
+bool listIsOrdered(List l) {
+	// TODO
+	if (l->head == NULL) {
+	    return true;
+	}
+	else {
+	    Node current_node = l->head;
+        //when starting values are equal
+        if (current_node->value == current_node->next->value) {
+            while (current_node->value == current_node->next->value) {
+                current_node = current_node->next;
+            }
+        }
+	    //ascending
+	    if (current_node->value < current_node->next->value) {
+	        while (current_node->next != NULL && current_node->value <= current_node->next->value) {
+                current_node = current_node->next;
+            }
+            if (current_node->next == NULL) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        //descending
+	    else if (current_node->value > current_node->next->value) {
+            while (current_node->next != NULL && current_node->value >= current_node->next->value) {
+                current_node = current_node->next;
+            }
+            if (current_node->next == NULL) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+}
+
+

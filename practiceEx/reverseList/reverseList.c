@@ -1,0 +1,28 @@
+
+#include "list.h"
+
+void listReverse(List l) {
+	int list_length = 0;
+    int counter = 0;
+    Node current = l->head;
+    //get the length of the list
+    while (current->next != NULL) {
+        list_length++;
+        current = current->next;
+    }
+    
+    int temp_value = current->value;
+    
+    while (list_length >= 1) {
+       while (counter < list_length) {
+            temp_value = current->value;
+            current->value = current->next->value;
+            current->next->value = temp_value;
+            counter++;
+        }
+        list_length--;
+    }
+    
+    
+}
+

@@ -1,0 +1,508 @@
+#include <assert.h>
+#include <err.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
+
+
+#include "helper.h"
+
+
+//use for normalizing words in a file
+char *wordsOPeration(char rawWord[]){
+    char *result = calloc(MAX_WORD, sizeof(char));
+    if (result == NULL) {
+        fprintf(stderr, "error: out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+    //to lowercases
+    for (int i = 0; i < strlen(rawWord); i++) {
+        result[i] = tolower(rawWord[i]);
+    }
+    //normalize
+    int length = strlen(result);
+    
+    
+    while(length != 0) {
+        if (isalpha(result[length -1]) != 0 || isTargetPunc(result[length - 1]) == 0) {
+            break;
+        }
+        else {
+            result[length - 1] = '\0';
+        }
+        length--;
+    }
+    
+    return result;
+}
+
+//use for checking punctuation
+int isTargetPunc(char character) {
+    if (character == '.' || character == ',' || character == ':' || character == ';' || character == '?' || character == '*') {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+//create whole node (tree node and file node)
+InvertedIndexBST createWholeNode(char operatedWord[], char *file) {
+    InvertedIndexBST new_node = createTreeNode(operatedWord);
+    FileList file_list = createListNode(file);
+    new_node->fileList = file_list;
+    return new_node;
+}
+
+
+//create new tree node
+InvertedIndexBST createTreeNode(char operatedWord[]) {
+
+    InvertedIndexBST tree_node = malloc(sizeof(*tree_node));
+    if (tree_node == NULL) {
+    	fprintf(stderr, "error: out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+    //initialize
+    tree_node->word = strdup(operatedWord);
+	tree_node->fileList = NULL;
+	tree_node->left = NULL;
+	tree_node->right = NULL;
+	return tree_node;
+}
+
+//create new file node
+FileList createListNode (char *file) {
+    
+    FileList file_node = malloc(sizeof(*file_node));
+    if (file_node == NULL) {
+    	fprintf(stderr, "error: out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+    //initialize
+	file_node->filename = strdup(file);
+	file_node->tf = 1.0;
+	file_node->next = NULL;
+	
+	return file_node;
+}
+
+//insert node to tree
+InvertedIndexBST insertNode(InvertedIndexBST root, char operatedWord[], char *file) {
+    //base case
+    if (root == NULL) {
+        return createWholeNode(operatedWord, file);
+    }
+    else if (strcmp(root->word, operatedWord) > 0) {
+        root->left = insertNode(root->left, operatedWord, file);
+    }
+    else if(strcmp(root->word, operatedWord) < 0) {
+        root->right = insertNode(root->right, operatedWord, file);
+    }
+    //return root
+    return root;
+    
+}
+
+//see if word is in tree return 1 if not found, return 2 otherwise
+int haveWord(InvertedIndexBST root, char operatedWord[]) {
+    //base case
+    //not found
+    if (root == NULL) {
+        return 1;
+    }
+    //same word 
+    if (strcmp(root->word, operatedWord) == 0) {
+        return 2;
+    }
+    else if (strcmp(root->word, operatedWord) > 0) {
+        return haveWord(root->left, operatedWord);
+    }
+    else if (strcmp(root->word, operatedWord) < 0) {
+        return haveWord(root->right, operatedWord);
+    }
+    //if is same word
+    else {
+        return 1;
+    }
+}
+
+//update tf value if file node is present
+//create file node otherwise
+void FileNodeOPeration(InvertedIndexBST root, char *file, char operatedWord[]) {
+    //go to the node containing the word
+    InvertedIndexBST target = findTargetNode(root, operatedWord);
+    //set the fileList target is pointing as the current
+    FileList current = target->fileList;
+    int foundNode = 0;
+    //find the filenode in the fileList
+    while (current != NULL) {
+        //file node found, increase the tf value by 1
+        //case 2a
+        if (strcmp(file, current->filename) == 0) {
+            current->tf = current->tf + 1;
+            foundNode = 1;
+            return;
+        }
+        else {
+            current = current->next;
+        }
+    }
+    //if no file node, create and insert file node in order
+    //case 2b
+    if (foundNode == 0) {
+        InsertFileInOrder(target, file);
+    }
+
+}
+
+//insert file node in order
+void InsertFileInOrder(InvertedIndexBST target, char *file) {
+    FileList new_node = createListNode(file);
+    FileList head = target->fileList;
+    FileList current = target->fileList;
+    
+    //insert at head
+    if (strcmp(file, head->filename) < 0) {
+        //targetnode points to the new node
+        target->fileList = new_node;
+        //new_node next points to the original list
+        new_node->next = current;
+    }
+    //
+    else {
+        //iterate through the list to find the correct spot to insert
+        while (current->next != NULL) {
+            //file larger than next filename
+            if (strcmp(file, current->next->filename) > 0) {
+                current = current->next;
+            }
+            //file smaller than next filename (correct spot to insert)
+            //insert in between
+            else if (strcmp(file, current->next->filename) < 0) {
+                new_node->next = current->next;
+                current->next = new_node;
+                //exit loop
+                break;
+            }
+        }
+        //if reaches the end of the loop, insert at the end of linked list
+        if (current->next == NULL) {
+            current->next = new_node;
+        }
+    }
+}
+
+//go to the target node
+InvertedIndexBST findTargetNode(InvertedIndexBST root, char operatedWord[]) {
+    //this should not happen as the node should be in the tree if this function is called
+    if (root == NULL) {
+        return NULL;
+    }
+    //recursively find the node
+    else if (strcmp(root->word, operatedWord) > 0) {
+        return findTargetNode(root->left, operatedWord);
+    }
+    else if (strcmp(root->word, operatedWord) < 0) {
+        return findTargetNode(root->right, operatedWord);
+    }
+    //found node
+    else {
+        return root;
+    }
+}
+
+
+//divide all tf values with the file word count
+void UpdateTF(InvertedIndexBST root, char *file, int fileWordCount) {
+    //base case
+    if (root == NULL) {
+        return;
+    }
+    FileList current = root->fileList;
+    //find the correct file node and divide the tf inside with the file word count
+    while (current != NULL) {
+        //found node, update and break loop (only one node has to be updated each time)
+        if (strcmp(file, current->filename) == 0) {
+            current->tf = (current->tf / fileWordCount);
+            
+        }
+        current = current->next;
+    }
+    
+    
+    //recursively go to every node
+    UpdateTF(root->left, file, fileWordCount);
+    UpdateTF(root->right, file, fileWordCount);
+}
+
+
+
+void doPrintInvertedIndex(InvertedIndexBST tree, char *filename, FILE *out) {
+    //base case
+    if (tree == NULL) {
+        return;
+    }
+    //inorder (left->print->right)
+    
+    //print left recursively
+    doPrintInvertedIndex(tree->left, filename, out);
+    
+    //printing
+    
+    
+    //print the word
+    fprintf(out, "%s ", tree->word);
+    
+    //variable for the iteration of file list
+    FileList current_file_node = tree->fileList;
+    
+    //print file name and tf value of the word
+    while (current_file_node != NULL) {
+        if (current_file_node->next != NULL) {
+            fprintf(out, "%s ", current_file_node->filename);
+            fprintf(out, "(%.7lf) ", current_file_node->tf);
+            current_file_node = current_file_node->next;
+        }
+        else {
+            fprintf(out, "%s ", current_file_node->filename);
+            fprintf(out, "(%.7lf)", current_file_node->tf);
+            break;
+        }
+    }
+    
+    fprintf(out, "\n");
+    
+    
+    //print right recursively
+   doPrintInvertedIndex(tree->right, filename, out);
+}
+
+
+//create TfIdfList
+TfIdfList createTfIdfList(FileList current, int D,int numberOfDoc) {
+    TfIdfList TfIdf_node = malloc(sizeof(*TfIdf_node));
+    if (TfIdf_node == NULL) {
+    	fprintf(stderr, "error: out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+    double tfIdf = calculateTfIdf(current->tf, D, numberOfDoc);
+    //initialize
+	TfIdf_node->filename = strdup(current->filename);
+	TfIdf_node->tfIdfSum = tfIdf;
+	TfIdf_node->next = NULL;
+	
+	return TfIdf_node;
+}
+
+//this function decides to insert node or to update TfIdf value
+TfIdfList TfIdfListOperation(TfIdfList result, FileList current_file_node, int D, int numberOfDoc) {
+
+    int IsInTfIdfList = findTfIdfNode(result, current_file_node);
+    //if file doesn't exist in the TfIdfList, insert
+    if (IsInTfIdfList == 0) {
+        result = InsertTfIdfListInorder(result, current_file_node, D, numberOfDoc);
+    }
+    //if file exist, update the TfIdf value by adding the new value to the old one
+    else if (IsInTfIdfList == 1) {
+        result = updateTfIdf(result, current_file_node, D, numberOfDoc);
+    }
+    return result;
+}
+
+int findTfIdfNode(TfIdfList result, FileList current_file_node) {
+    TfIdfList current = result;
+    while (current != NULL) {
+        //file alreadt exist in result list
+        if (strcmp(current->filename, current_file_node->filename) == 0) {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
+TfIdfList updateTfIdf(TfIdfList result, FileList current_file_node, int D, int numberOfDoc) {
+    TfIdfList current = result;
+    //go to the tf-idf of the node
+    while (current != NULL) {
+        //found node
+        if (strcmp(current->filename, current_file_node->filename) == 0) {
+            current->tfIdfSum += calculateTfIdf(current_file_node->tf, D, numberOfDoc);
+        }
+        current = current->next;
+    }
+    
+    return result;
+}
+
+
+//insert nodes in descending order of tf-idf, if same tf-idf, order in ascending filename order
+//since the original filelist is in alphabetical order, if tf-idf is the same, just insert the node after the current node
+TfIdfList InsertTfIdfListInorder(TfIdfList result, FileList current_file_node, int D, int numberOfDoc) {
+    if (result == NULL) {
+        result = createTfIdfList(current_file_node, D, numberOfDoc);
+        return result;
+    }
+    //create a new TfIdfNode for the current file node
+    TfIdfList new_node = createTfIdfList(current_file_node, D, numberOfDoc);
+    //first node of the TfIdfList
+    TfIdfList head = result;
+    //variable for iterating the result TfIdfList, currently pointing to head of that list
+    TfIdfList current = result;
+    
+    //action on head node
+    //insert at head
+    if (new_node->tfIdfSum > head->tfIdfSum) {
+        //result points to the new node
+        result = new_node;
+        //new_node next points to the original list
+        new_node->next = head;
+        
+    }
+    //same tfidf with the head
+    else if (new_node->tfIdfSum == head->tfIdfSum) {
+        //loop until tfidf no longer the same
+        while (current->next != NULL && new_node->tfIdfSum == current->next->tfIdfSum) {
+            current = current->next;
+        }
+        if (current != NULL) {
+             //insert in between
+            new_node->next = current->next;
+            current->next = new_node;
+            return result;
+        }
+        else {
+            current->next = new_node;
+            return result;
+        }
+    }
+    //smaller than head
+    else if (new_node->tfIdfSum < head->tfIdfSum) {
+        //find correct spot to insert
+        while (current->next != NULL) {
+            if (new_node->tfIdfSum > current->next->tfIdfSum) {
+                //insert
+                new_node->next = current->next;
+                current->next = new_node;
+                return result;
+            }
+            else if (new_node->tfIdfSum == current->next->tfIdfSum) {
+                //loop until tfidf no longer the same
+                while (current->next != NULL && new_node->tfIdfSum == current->next->tfIdfSum) {
+                    current = current->next;
+                }
+                if (current != NULL) {
+                    //insert in betweeen
+                    new_node->next = current->next;
+                    current->next = new_node;
+                    return result;
+                }
+                else {
+                    current->next = new_node;
+                    return result;
+                }
+            }
+            current = current->next;
+        }
+        //insert in the end
+        if (current->next == NULL) {
+            current->next = new_node;
+        }
+        
+    }
+    return result;
+}
+
+
+void sortResult(TfIdfList result) {
+    int looping = 1;
+    TfIdfList current = result;
+    TfIdfList swapped = NULL;
+    if (result == NULL) {
+        return;
+    }
+    //looping remains 0 when no data is swapped, that means the list is sorted
+    while (looping == 1) {
+        looping = 0;
+        current = result;
+        //while next node is not swapped
+        while (current->next != swapped) {
+            //if next value is greater than current value
+            //swap the data in the nodes
+            if (current->next->tfIdfSum > current->tfIdfSum) {
+                swapData(current, current->next);
+                looping = 1;
+            }
+            //same value, check alpha order
+            else if (current->next->tfIdfSum == current->tfIdfSum) {
+                if (strcmp(current->filename, current->next->filename) > 0) {
+                    swapData(current, current->next);
+                    looping = 1;
+                }
+            }
+            current = current->next;
+        }
+        swapped = current;
+    }
+    return;
+}
+
+void swapData(TfIdfList a, TfIdfList b) {
+    //swap Tf-Idf values    
+    double temp;
+    temp = a->tfIdfSum;
+    a->tfIdfSum = b->tfIdfSum;
+    b->tfIdfSum = temp;
+    
+    //swap filenames
+    char *tempF;
+    tempF = a->filename;
+    a->filename = b->filename;
+    b->filename = tempF;
+    
+}
+//find length of file list
+int findLength(FileList current) {
+    if (current == NULL) {
+        return 0;
+    }
+    return 1 + findLength(current->next);
+}
+
+//calculate tfIdf
+double calculateTfIdf(double tf, double D, double numberOfDoc) {
+    double tfIdf;
+    double x;
+    x = D / numberOfDoc;
+    double idf = log10(x);                                                
+    tfIdf = tf * idf;
+    return tfIdf;
+}
+
+
+//free every node in the tree recursively
+void doTreeFree(InvertedIndexBST tree, bool freeList) {
+    if (tree != NULL) {
+        doTreeFree(tree->left, freeList);
+        doTreeFree(tree->right, freeList);
+        if (freeList) {
+            listFree(tree->fileList);
+        }
+    }
+    free(tree);
+}
+
+//free every node in list
+void listFree(FileList list) {
+    FileList temp ;
+    while (list != NULL) {
+        temp = list;
+        list = list->next;
+        
+        free(temp);
+    }
+}

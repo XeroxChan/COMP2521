@@ -1,0 +1,303 @@
+// IntList.c - Lists of integers
+
+#include <assert.h>
+#include <err.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
+
+#include "IntList.h"
+
+// data structures representing IntList
+struct IntListNode {
+	int data;
+	struct IntListNode *next;  // pointer to next node
+};
+
+struct FileListRep {
+	
+	struct IntListNode *head; // pointer to node containing first value
+	
+};
+typedef struct FileListRep *FileList;
+
+/**
+ * Create a new, empty IntList.
+ */
+IntList IntListNew(void) {
+	struct IntListRep *l = malloc(sizeof(*l));
+	if (l == NULL) {
+		err(EX_OSERR, "couldn't allocate IntList");
+	}
+
+	l->size = 0;
+	l->first = NULL;
+	l->last = NULL;
+	return l;
+}
+
+/**
+ * Release all resources associated with an IntList.
+ */
+void IntListFree(IntList l) {
+	if (l == NULL) return;
+
+	struct IntListNode *curr = l->first;
+	while (curr != NULL) {
+		struct IntListNode *temp = curr;
+		curr = curr->next;
+		free(temp);
+	}
+	free(l);
+}
+
+/**
+ * Create an IntList by reading values from a file.
+ * Assume that the file is open for reading.
+ */
+IntList IntListRead(FILE *in) {
+	IntList l = IntListNew();
+
+	int v;
+	while (fscanf(in, "%d", &v) == 1) {
+		IntListAppend(l, v);
+	}
+	return l;
+}
+
+/**
+ * Display IntList as one integer per line on `stdout`.
+ */
+void IntListShow(IntList l) {
+	IntListPrint(stdout, l);
+}
+
+/**
+ * Create a new IntListNode with value v
+ * (this function is local to this ADT)
+ */
+static struct IntListNode *newIntListNode(int v) {
+	struct IntListNode *n = malloc(sizeof(*n));
+	if (n == NULL) {
+		err(EX_OSERR, "couldn't allocate IntList node");
+	}
+	n->data = v;
+	n->next = NULL;
+	return n;
+}
+
+/**
+ * Append one integer to the end of an IntList.
+ */
+void IntListAppend(IntList l, int v) {
+	assert(l != NULL);
+
+	struct IntListNode *n = newIntListNode(v);
+	if (l->first == NULL) {
+		l->first = l->last = n;
+	} else {
+		l->last->next = n;
+		l->last = n;
+	}
+	l->size++;
+}
+
+/**
+ * Insert an integer into correct place in a sorted IntList.
+ */
+void IntListInsertInOrder(IntList l, int v) {
+
+	assert(l != NULL);
+
+	// TODO: Task 1 - Implement this function
+	
+	//create a new node for v
+	struct IntListNode *new_node = newIntListNode(v);
+	
+	//when the original list is empty
+    if (l->first == NULL) {
+        //create a new list
+        IntListNew();
+        //insert the new node to the new list and modify IntListRep
+        l->first = new_node;
+        l->last = new_node;
+        l->size = 1;
+    }
+    //whe the original list is not empty
+    //three cases
+    //Case 1. when there is only one node in the original list
+    //Case 2. insert new node in the middle of the list
+    //Case 3. insert new node at the end of the list
+    else {
+        
+        struct IntListNode *current_node = l->first;
+        int i = 1;
+        //iterate the list to find the correct spot the insert
+        while (current_node->next != NULL && current_node->next->data < new_node->data) {
+            current_node = current_node->next;
+            i++;
+        }
+
+        l->size++;
+        
+        //when there is one node in the list
+        if (i == 1 /*&& current_node->next == NULL*/) {
+            if (new_node->data < current_node->data) {
+                new_node->next = current_node;
+                l->first = new_node;
+                //l->last = current_node;
+            }
+            else {
+                current_node->next = new_node;
+                l->last = new_node;
+            }
+        }
+        /*
+        //when the spot is right after the first element
+        else if (i == 1 && current_node->next != NULL) {
+            new_node->next = current_node->next;
+            current_node->next = new_node;
+        }
+        */
+        //case 2
+        else if (i != 1 && new_node->data < l->last->data) {
+            new_node->next = current_node->next;
+            current_node->next = new_node;
+        }
+        //case 3
+        
+        else {
+            current_node->next = new_node;
+            l->last = new_node;
+        }
+        
+    }
+    
+}
+
+/**
+ * Return the number of elements in an IntList.
+ */
+int IntListLength(IntList l) {
+	assert(l != NULL);
+
+	return l->size;
+}
+
+/**
+ * Make a copy of an IntList.
+ * New list should look identical to the original list.
+ */
+IntList IntListCopy(IntList l) {
+	assert(l != NULL);
+
+	IntList copy = IntListNew();
+	for (struct IntListNode *curr = l->first;
+			curr != NULL; curr = curr->next) {
+		IntListAppend(copy, curr->data);
+	}
+	return copy;
+}
+
+/**
+ * Make a sorted copy of an IntList.
+ */
+IntList IntListSortedCopy(IntList l) {
+	assert(l != NULL);
+    
+    //int temp_data;
+	// TODO: Task 2 - Implement this function
+	
+	/*
+    struct IntListNode *current = l->first;
+    struct IntListNode *current_next = NULL;
+    
+    
+    //sort the list
+    while (current != NULL) {
+        current_next = current->next;
+        while (current_next != NULL) {
+            if (current->data > current_next->data) {
+                temp_data = current->data;
+                current->data = current->next->data;
+                current->next->data = temp_data;
+            }
+            current_next = current_next->next;
+        }
+        current = current->next;
+    }
+    */
+    
+    struct IntListNode *original_list_current = l->first;
+    
+    //create a new list as a copy
+    struct IntListRep *sortedList = IntListNew();
+    while (original_list_current != NULL) {
+        IntListInsertInOrder(sortedList, original_list_current->data);
+        //printf("The data is %d\n", original_list_current->data);
+        original_list_current = original_list_current->next;
+    }
+    
+	// TODO: Replace this with your return value
+	return sortedList;
+}
+
+/**
+ * Check whether an IntList is sorted in ascending order.
+ * Returns `false` if list is not sorted, `true` if it is.
+ */
+bool IntListIsSorted(IntList l) {
+	assert(l != NULL);
+
+	// trivial cases, 0 or 1 items
+	if (l->size < 2) {
+		return true;
+	}
+
+	// scan list, looking for out-of-order pair
+	for (struct IntListNode *curr = l->first;
+			curr->next != NULL; curr = curr->next) {
+		if (curr->next->data < curr->data) {
+			return false;
+		}
+	}
+
+	// nothing out-of-order, must be sorted
+	return true;
+}
+
+/**
+ * Check internal consistency of an IntList.
+ */
+bool IntListOK(IntList l) {
+	assert(l != NULL);
+
+	if (l->size == 0) {
+		return (l->first == NULL && l->last == NULL);
+	}
+
+	// scan to (but not past) last node
+	struct IntListNode *curr = l->first;
+	int numNodes = 1; // at least one node
+	while (curr->next != NULL) {
+		numNodes++;
+		curr = curr->next;
+	}
+
+	return (numNodes == l->size && curr == l->last);
+}
+
+/**
+ * Display an IntList as one integer per line to a file.
+ * Assume that the file is open for writing.
+ */
+void IntListPrint(FILE *out, IntList l) {
+	assert(l != NULL);
+
+	for (struct IntListNode *curr = l->first;
+			curr != NULL; curr = curr->next) {
+		fprintf(out, "%d\n", curr->data);
+	}
+}
+

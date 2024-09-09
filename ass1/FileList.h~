@@ -1,0 +1,21 @@
+#ifndef FILELIST_H
+#define FILELIST_H
+
+#include <stdbool.h>
+#include <stdio.h>
+
+
+#include "invertedIndex.h"
+
+typedef struct FileListRep *FileNameList;
+
+//create an empty list
+struct FileListRep *FileListNew(void);
+
+//create an empty node
+FileList FileNodeNew(char *fileName);
+
+//inesrt node into list
+//void FileListInsert(FileList fl, char *fileName);
+
+#endif

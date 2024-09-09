@@ -1,0 +1,42 @@
+#include <assert.h>
+#include <err.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
+
+#include "FileList.h"
+#include "invertedIndex.h"
+
+
+
+struct FileListRep {
+    struct FileNode *head; 
+}
+
+//create a new FileList
+
+struct FileListRep *FileListNew(void) {
+    struct FileListRep *new_list = malloc(sizeof(*new_list));
+    if (new_list == NULL) {
+        err(EX_OSERR, "couldn't allocate FileList");
+    }
+    new_list->head = NULL;
+    return new_list;
+}
+
+//create a new FileNode
+FileList FileNodeNew(char *fileName) {
+	FileList new_node = malloc(sizeof(*new_node));
+	if (new_node == NULL) {
+		err(EX_OSERR, "couldn't allocate FileNode");
+	}
+
+	new_node->filename = fileName;
+	new_node->tf = 0;
+	new_node->next = NULL;
+	return new_node;
+}
+
+
+

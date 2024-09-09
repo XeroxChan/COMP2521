@@ -1,0 +1,9 @@
+Question 6
+
+Which of the data structures is most suitable? Justify your answer.
+You must use time complexities as a basis for your justification.
+
+
+Heap is the most suitable. 
+
+For push, ordered linked list and ordered array 

@@ -1,0 +1,21 @@
+
+NOTE:
+- Your time complexities should be expressed in big-O notation and be in
+  terms of n, where n is the number of cells in the maze.
+
+============
+  solveBfs
+============
+
+- Worst case time complexity: O(n)
+
+- Explanation: We visit each cell at most once and during the queue operations,at most 4 cells would be added to the queue each time, so the loop at the worst case would have 4*n iterations. Therefore the worst case time complexity of it would be O(n);
+
+============
+  solveDfs
+============
+
+- Worst case time complexity: O(n)
+
+- Explanation: Similar to the reason to solveBfs but 4 cells are added to the stack instead of the queue.
+

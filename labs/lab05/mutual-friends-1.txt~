@@ -1,0 +1,14 @@
++ Harry
++ Ron
++ Hermione
+f Harry Ron
+f Ron Hermione
+m Harry Hermione
+r Ron
++ Xerox
++ Chan
+f Xerox Harry
+f Xerox Ron
+f Xerox Chan
+r Xerox
+r Chan

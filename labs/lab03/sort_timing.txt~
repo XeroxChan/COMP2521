@@ -1,0 +1,18 @@
+Input	Initial	Number	AvgTime		AvgTime
+Size	Order	of Runs	for sort	for sortIntList
+10000	random	5	T1sec		T2sec
+10000	sorted  5	T1sec		T2sec
+10000	reverse	5	T1sec		T2sec
+20000	random	5	T1sec		T2sec
+20000	sorted	5	T1sec		T2sec
+20000	reverse	5	T1sec		T2sec
+40000	random	5	0.01sec		3.07sec
+40000	sorted	5	6*10^-3sec	8*10^-3sec
+40000	reverse	5	2*10^-3sec	2*10^-3sec
+60000	random	5	0.02sec		10.1sec
+60000	sorted	5	4*10^-3sec	0.01sec
+60000	reverse	5	8*10^-3sec	0.01sec
+80000	random	5	0.028sec    22.128sec
+80000	sorted	5	0.01sec		0.012sec
+80000	reverse	5	0.01sec		0.01sec
+
